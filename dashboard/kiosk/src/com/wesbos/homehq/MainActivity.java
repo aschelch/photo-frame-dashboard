@@ -1,7 +1,9 @@
 package com.wesbos.homehq;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -43,6 +45,14 @@ public class MainActivity extends Activity {
       Intent home = new Intent(Intent.ACTION_MAIN);
       home.addCategory(Intent.CATEGORY_HOME);
       home.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      // If the kiosk is itself the default Home app, a plain HOME intent comes straight back
+      // here. Open another installed launcher instead, when there is one.
+      for (ResolveInfo ri : getPackageManager().queryIntentActivities(home, 0)) {
+        if (!ri.activityInfo.packageName.equals(getPackageName())) {
+          home.setComponent(new ComponentName(ri.activityInfo.packageName, ri.activityInfo.name));
+          break;
+        }
+      }
       startActivity(home);
       finish();
     }
